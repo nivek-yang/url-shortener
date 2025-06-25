@@ -7,3 +7,31 @@ requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.3",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.0",
+]
+
+
+# ruff設定
+[tool.ruff]
+# 啟用基本錯誤檢查與 import 排序
+select = ["E", "F", "I"]
+# 可略過某些資料夾（例如虛擬環境）
+exclude = ["venv", ".venv", "__pycache__", "migrations"]
+# 行寬與 Python 目標版本
+line-length = 88
+target-version = "py311"
+# 自動修復違規（包含格式與排序）
+fix = true
+
+[tool.ruff.format]
+# 使用單引號
+quote-style = "single"
+# 換行符號
+line-ending = "lf"
+
+[tool.ruff.isort]
+# 排序 import 時合併 as 語法
+combine-as-imports = true
