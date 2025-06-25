@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
+    "prettier": "^3.6.0",
+    "prettier-plugin-django": "^0.5.18"
+  }
+}
