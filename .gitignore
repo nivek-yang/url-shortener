@@ -10,8 +10,21 @@ wheels/
 .venv
 .env
 
+# Editor
+.vscode/
+.idea/
+
 # DB
 *.sqlite3
 
 # Others
 .DS_Store
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+
+# Static & Media
+staticfiles/
+media/

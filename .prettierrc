@@ -1,0 +1,20 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "printWidth": 5000,
+  "twigPrintWidth": 5000,
+  "twigMultiTags": ["with,endwith"],
+  "twigAlwaysBreakObjects": false,
+  "twigSingleQuote": false,
+  "overrides": [
+    {
+      "files": ["*.jinja", "*.django", "**/views/**/*.html"],
+      "options": {
+        "parser": "melody"
+      }
+    }
+  ],
+  "plugins": ["prettier-plugin-django"]
+}
