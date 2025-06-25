@@ -15,3 +15,6 @@ shell:
 
 dbshell:
 	uv run manage.py dbshell
+
+pytest:
+	uv run pytest -v --tb=short --maxfail=5 --disable-warnings
