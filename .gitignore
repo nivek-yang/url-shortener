@@ -28,3 +28,7 @@ build/
 # Static & Media
 staticfiles/
 media/
+
+# esbuild & Tailwind
+/backend/static/assets/styles/style.css
+/backend/static/assets/scripts/app.js

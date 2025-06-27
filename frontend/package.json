@@ -1,10 +1,24 @@
 {
   "type": "module",
+  "scripts": {
+    "reset": "npm install && npm prune",
+    "dev": "concurrently --kill-others --names \"esbuild,tailwind\" -c \"yellow,blue\" \"esbuild ./src/scripts/input.js --bundle --outfile=../backend/static/assets/scripts/app.js --watch\" \"npx @tailwindcss/cli -i ./src/styles/input.css -o ../backend/static/assets/styles/style.css --watch\"",
+    "build": "esbuild ./src/scripts/input.js --bundle --outfile=../backend/static/assets/scripts/app.js && npx @tailwindcss/cli -i ./src/styles/input.css -o ../backend/static/assets/styles/style.css --minify"
+  },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "concurrently": "^9.2.0",
+    "daisyui": "^5.0.43",
+    "esbuild": "^0.25.5",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.0",
     "prettier": "^3.6.0",
-    "prettier-plugin-django": "^0.5.18"
+    "prettier-plugin-django": "^0.5.18",
+    "tailwindcss": "^4.1.11"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9",
+    "htmx.org": "^2.0.5"
   }
 }
