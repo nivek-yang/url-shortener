@@ -35,3 +35,35 @@ jobs:
 
       - name: Run pytest
         run: uv run pytest -v --tb=short --maxfail=5 --disable-warnings
+
+  docker-compose-pytest:
+    name: Docker Compose Pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create backend .env file
+        run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > backend/.env
+          echo "DEBUG=True" >> backend/.env
+          echo "USE_POSTGRES=True" >> backend/.env
+          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> backend/.env
+          echo "POSTGRES_DB=postgres" >> backend/.env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> backend/.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> backend/.env
+          echo "POSTGRES_HOST=db" >> backend/.env
+          echo "POSTGRES_PORT=5432" >> backend/.env
+
+      - name: Build docker-compose services
+        run: docker compose -f docker-compose.dev.yml build
+
+      - name: Run pytest in docker-compose
+        run: docker compose -f docker-compose.dev.yml run --rm backend uv run pytest -v --tb=short --maxfail=5 --disable-warnings
+
+      - name: Check container logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.dev.yml logs backend
+
+      - name: Shutdown docker-compose
+        run: docker compose -f docker-compose.dev.yml down -v
