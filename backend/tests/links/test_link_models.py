@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth.hashers import check_password
 
 from links.models import Link
 
@@ -45,7 +46,8 @@ def test_link_update(link_factory):
     updated_link = Link.objects.get(pk=link.pk)
     assert updated_link.original_url == new_url
     assert updated_link.slug == 'updated-slug'
-    assert updated_link.password == 'newpassword'
+    assert not link.password == 'newpassword'
+    assert check_password('newpassword', updated_link.password)
 
 
 @pytest.mark.django_db
