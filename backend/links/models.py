@@ -46,9 +46,16 @@ class Link(models.Model):
         return slugified_slug
 
     def clean_password(self, password_value):
-        if password_value and len(password_value) > 64:
+        if (
+            password_value
+            and not password_value.startswith('pbkdf2_')
+            and len(password_value) > 64
+        ):
             raise ValidationError(PASSWORD_MAX_LENGTH_ERROR)
-        return make_password(password_value) if password_value else None
+
+        if password_value and not password_value.startswith('pbkdf2_'):
+            return make_password(password_value)
+        return password_value
 
     def save(self, *args, **kwargs):
         if self.slug:
