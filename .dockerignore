@@ -1,0 +1,40 @@
+# 環境
+.venv/
+node_modules/
+.env*
+
+# 編譯暫存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 開發工具
+.vscode/
+.eslintrc*
+.prettierrc*
+.python-version
+
+# 系統檔
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# 測試資料、備份
+*.log
+*.db
+*.sqlite3
+
+# frontend
+/src
+
+# Docker-related artifacts
+docker*.yml
+docker/
+.dockerignore
+
+tailwind.config.js
+package*.json
