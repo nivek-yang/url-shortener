@@ -22,6 +22,7 @@ dev = [
     "pytest>=8.4.1",
     "pytest-django>=4.11.1",
     "pytest-factoryboy>=2.7.0",
+    "requests-mock>=1.12.1",
     "ruff>=0.12.0",
 ]
 
