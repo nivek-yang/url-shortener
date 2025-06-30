@@ -1,0 +1,42 @@
+{% load socialaccount %}
+
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- 1. 左側 Logo 或網站標題 -->
+      <div class="flex-shrink-0">
+        <a href="/" class="text-2xl font-bold text-indigo-600">shr.today</a>
+      </div>
+
+      <!-- 2. 右側使用者狀態區 -->
+      <div class="flex items-center">
+        {% if user.is_authenticated %}
+
+        <!-- 如果已登入：顯示使用者資訊和登出按鈕 -->
+        <div class="flex items-center space-x-4">
+          <!-- 使用者頭像 (從 Google 帳號取得) -->
+          {% if user.socialaccount_set.all.0.get_avatar_url %}
+          <img class="h-8 w-8 rounded-full" src="{{ user.socialaccount_set.all.0.get_avatar_url }}" alt="User Avatar" />
+          {% endif %}
+
+          <!-- 使用者 Email -->
+          <span class="text-gray-700 hidden sm:block">{{ user.email }}</span>
+
+          <!-- 登出按鈕 -->
+          <a href="{% url 'account_logout' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"> 登出 </a>
+        </div>
+
+        {% else %}
+        <a href="{% provider_login_url 'google' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ring-2 ring-gray-200">
+          <svg class="w-5 h-5 mr-3" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+            <path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 111.8 512 0 398.2 0 256S111.8 0 244 0c69.8 0 130.8 28.5 173.4 74.5l-68.2 68.2C324.7 112.3 287.2 96 244 96c-87.5 0-157.9 74.2-157.9 160S156.5 416 244 416c96.2 0 133-67.1 137-99.7h-137v-72.2h220.8c2.3 12.7 3.5 25.8 3.5 39.7z"></path>
+          </svg>
+
+          <span>使用 Google 登入</span>
+        </a>
+
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
