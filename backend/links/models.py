@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -26,6 +27,13 @@ class Link(models.Model):
             'max_length': SLUG_MAX_LENGTH_ERROR,
         },
     )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='links',
+        null=True,  # 允許資料庫中此欄位為 NULL
+        blank=True,  # 允許在 Django Admin 或表單中此欄位為空
+    )
     password = models.CharField(
         max_length=128,
         blank=True,
@@ -36,6 +44,7 @@ class Link(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(blank=True, null=True)
     click_count = models.PositiveIntegerField(default=0)
+    notes = models.TextField(blank=True, null=True)
 
     def clean_slug(self, slug_value):
         slugified_slug = slugify(slug_value)
