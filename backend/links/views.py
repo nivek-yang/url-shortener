@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -94,3 +95,10 @@ def redirect_link(request, slug):
     link.save(update_fields=['click_count'])
 
     return HttpResponseRedirect(link.original_url)
+
+
+def new(req):
+    return render(
+        req,
+        'links/new.html',
+    )

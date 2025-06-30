@@ -1,0 +1,25 @@
+{% extends 'layouts/default.html' %} {% block main %}
+
+<div x-data="shortenerForm()" @submit.prevent="submit" class="max-w-md mx-auto p-4">
+  <form>
+    <input x-model="original_url" placeholder="完整網址" class="input input-bordered w-full mb-2" />
+    <input x-model="short_url" placeholder="自訂代號 (可空)" class="input input-bordered w-full mb-2" />
+    <input x-model="password" placeholder="密碼 (選填)" type="password" class="input input-bordered w-full mb-2" />
+    <textarea x-model="notes" placeholder="備註 (選填)" class="textarea textarea-bordered w-full mb-2"></textarea>
+    <label class="flex items-center mb-2">
+      <input x-model="is_active" type="checkbox" class="checkbox mr-2" checked />
+      啟用
+    </label>
+    <button type="submit" class="btn btn-primary" :disabled="isLoading">
+      <span x-show="!isLoading">建立</span>
+      <span x-show="isLoading" class="loading loading-spinner loading-xs"></span>
+    </button>
+    <template x-if="errorMessage">
+      <div class="alert alert-error mt-4" x-text="errorMessage"></div>
+    </template>
+  </form>
+
+  <div x-ref="result"></div>
+</div>
+
+{% endblock main %}
