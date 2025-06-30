@@ -2,34 +2,60 @@
 
 <div x-data="shortenerForm()" @submit.prevent="submit" class="max-w-md mx-auto p-4">
   <form>
-    <input x-model="original_url" placeholder="完整網址" class="input input-bordered w-full mb-2" />
-    <input x-model="short_url" placeholder="自訂代號 (可空)" class="input input-bordered w-full mb-2" />
-    <input x-model="password" placeholder="密碼 (選填)" type="password" class="input input-bordered w-full mb-2" />
-    <div style="margin-bottom: 10px">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px">
+    <div>
+      <label for="original_url">連結</label>
+      <input id="original_url" x-model="original_url" placeholder="完整網址" class="input input-bordered w-full mb-2" />
+
+      <p class="text-sm text-gray-500 mb-2">貼上的網址若包含UTM標籤，會自動解析並使用 Google Analytics 功能</p>
+    </div>
+
+    <div>
+      <label for="short_url">短網址</label>
+      <input id="short_url" x-model="short_url" placeholder="自訂代號 (可空)" class="input input-bordered w-full mb-2" />
+      <p class="text-sm text-gray-500 mb-2">可自行填寫，或是自動產生</p>
+    </div>
+
+    <div>
+      <label for="password">密碼保護</label>
+      <input id="password" x-model="password" placeholder="密碼 (選填)" type="password" class="input input-bordered w-full mb-2" />
+      <p class="text-sm text-gray-500 mb-2">若不使用密碼保護，將此欄位清空即可</p>
+    </div>
+
+    <div class="mb-2">
+      <div class="flex justify-between items-center mb-1">
         <label for="notes">備註說明</label>
-        <!-- 按鈕觸發 fetchPageInfo 方法 -->
-        <button type="button" @click.prevent="fetchPageInfo" :disabled="isFetchingInfo" style="padding: 2px 8px; font-size: 0.8em">
+        <button type="button" class="btn btn-ghost" @click.prevent="fetchPageInfo" :disabled="isFetchingInfo" class="btn btn-sm btn-outline ml-2">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
           <span x-text="isFetchingInfo ? '抓取中...' : '取得頁面資訊'"></span>
         </button>
       </div>
-      <!-- textarea 使用 x-model 雙向綁定 notes 狀態 -->
-      <textarea id="notes" x-model="notes" rows="4" style="width: 100%"></textarea>
+      <textarea id="notes" x-model="notes" rows="4" class="w-full border border-gray-300"></textarea>
     </div>
     <label class="flex items-center mb-2">
       <input x-model="is_active" type="checkbox" class="checkbox mr-2" />
-      啟用
+      是否啟用
     </label>
     <button type="submit" class="btn btn-primary" :disabled="isLoading">
       <span x-show="!isLoading">建立</span>
       <span x-show="isLoading" class="loading loading-spinner loading-xs"></span>
     </button>
-    <template x-if="errorMessage">
-      <div class="alert alert-error mt-4" x-text="errorMessage"></div>
+    <template x-if="message">
+      <div :class="`alert mt-4 fixed left-1/2 top-6 -translate-x-1/2 z-50 alert-${messageType}`" x-text="message" x-init="setTimeout(() => { message = ''; }, 1000)"></div>
     </template>
   </form>
 
-  <div x-ref="result"></div>
+  <template x-if="messageType === 'success' && short_url_result">
+    <div class="mt-4 flex items-center gap-2 justify-between">
+      <div>
+        <span>短網址：</span>
+        <a :href="short_url_result" target="_blank" class="link link-primary" x-text="short_url_result"></a>
+      </div>
+
+      <button @click="copyToClipboard(short_url_result)" type="button" class="ms-2">
+        <i class="fa-solid fa-link cursor-pointer"></i>
+      </button>
+    </div>
+  </template>
 </div>
 
 {% endblock main %}
