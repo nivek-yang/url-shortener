@@ -81,15 +81,20 @@ def redirect_link(request, slug):
         )
 
     if link.password:
-        input_password = request.GET.get('password')
-        if not input_password:
-            return JsonResponse(
-                {'success': False, 'message': 'Password required.'}, status=403
-            )
-        if not check_password(input_password, link.password):
-            return JsonResponse(
-                {'success': False, 'message': 'Invalid password.'}, status=403
-            )
+        if request.method == 'POST':
+            input_password = request.POST.get('password')
+
+            if check_password(input_password, link.password):
+                return HttpResponseRedirect(link.original_url)
+
+            else:
+                return render(
+                    request,
+                    'links/enter_password.html',
+                    {'slug': slug, 'error': '密碼不正確.'},
+                )
+
+        return render(request, 'links/enter_password.html', {'slug': slug})
 
     link.click_count += 1
     link.save(update_fields=['click_count'])
