@@ -2,10 +2,12 @@ import json
 
 import requests
 from bs4 import BeautifulSoup
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -15,6 +17,7 @@ from links.constants import (
     ORIGINAL_URL_REQUIRED_ERROR,
 )
 
+from .forms import LinkForm
 from .models import Link
 
 
@@ -40,6 +43,9 @@ def link_shortener_api(request):
         slug=custom_slug,
         password=password,  # 密碼會在 model.save() 中被 hash
     )
+
+    if request.user.is_authenticated:
+        link_instance.owner = request.user
 
     try:
         link_instance.save()
@@ -73,14 +79,22 @@ def redirect_link(request, slug):
     try:
         link = Link.objects.get(slug=slug)
     except Link.DoesNotExist:
-        return JsonResponse(
-            {'success': False, 'message': 'Short URL not found.'}, status=404
-        )
+        context = {
+            'error_title': '找不到短網址',
+            'error_message': f'抱歉，我們找不到與 "{slug}" 對應的網址。請檢查您輸入的連結是否正確。',
+        }
+        # Render the error page with a 404 status code
+        return render(request, 'links/error_page.html', context, status=404)
 
+    # Check if the link is inactive
     if not link.is_active:
-        return JsonResponse(
-            {'success': False, 'message': 'This short URL is inactive.'}, status=403
-        )
+        # Prepare the context for the "inactive" error
+        context = {
+            'error_title': '連結已停用',
+            'error_message': '這個短網址目前已被擁有者設為停用狀態，暫時無法訪問。',
+        }
+        # Render the error page with a 403 (Forbidden) status code
+        return render(request, 'links/error_page.html', context, status=403)
 
     if link.password:
         if request.method == 'POST':
@@ -155,3 +169,36 @@ def fetch_page_info_api(request):
         return JsonResponse({'success': False, 'message': '無法抓取網頁'}, status=400)
     except Exception:
         return JsonResponse({'success': False, 'message': '處理時發生錯誤'}, status=500)
+
+
+@login_required
+def index(request):
+    links = Link.objects.filter(owner=request.user).order_by('-created_at')
+    return render(request, 'links/list.html', {'links': links})
+
+
+@login_required  # (Update)
+def update(request, id):
+    link = get_object_or_404(Link, pk=id, owner=request.user)
+
+    if request.method == 'POST':
+        form = LinkForm(request.POST, instance=link)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '短網址已成功更新！')
+            return redirect('links:index')
+    else:
+        form = LinkForm(instance=link)
+
+    return render(request, 'links/edit.html', {'form': form, 'action': '更新'})
+
+
+@login_required
+def delete(request, id):
+    link = get_object_or_404(Link, pk=id, owner=request.user)
+
+    if request.method == 'POST':
+        link_name = link.slug
+        link.delete()
+        messages.success(request, f'短網址 "{link_name}" 已成功刪除。')
+        return redirect('links:index')
