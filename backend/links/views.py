@@ -1,5 +1,7 @@
 import json
 
+import requests
+from bs4 import BeautifulSoup
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
@@ -107,3 +109,49 @@ def new(req):
         req,
         'links/new.html',
     )
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def fetch_page_info_api(request):
+    try:
+        data = json.loads(request.body)
+        url = data.get('original_url')
+        if not url:
+            return JsonResponse(
+                {'success': False, 'message': '未提供 URL。'}, status=400
+            )
+
+        # 設定 headers 模擬瀏覽器，避免被某些網站阻擋
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+        response = requests.get(url, headers=headers, timeout=5, verify=False)
+        response.raise_for_status()  # 如果狀態碼不是 2xx，會拋出異常
+
+        # 使用 BeautifulSoup 解析 HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # 獲取標題
+        title_tag = soup.find('title')
+        title = title_tag.string.strip() if title_tag else '（未找到標題）'
+
+        # 獲取描述 (description meta tag)
+        desc_tag = soup.find('meta', attrs={'name': 'description'})
+        description = (
+            desc_tag['content'].strip()
+            if desc_tag and 'content' in desc_tag.attrs
+            else '（未找到描述）'
+        )
+
+        # 組合成要填入備註欄的文字
+        notes_text = f'標題：{title}\n描述：{description}'
+
+        return JsonResponse({'success': True, 'notes': notes_text})
+
+    except requests.exceptions.RequestException:
+        # 處理網路請求相關錯誤 (如超時、連線失敗、無效 URL)
+        return JsonResponse({'success': False, 'message': '無法抓取網頁'}, status=400)
+    except Exception:
+        return JsonResponse({'success': False, 'message': '處理時發生錯誤'}, status=500)

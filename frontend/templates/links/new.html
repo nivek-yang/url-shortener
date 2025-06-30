@@ -5,7 +5,17 @@
     <input x-model="original_url" placeholder="完整網址" class="input input-bordered w-full mb-2" />
     <input x-model="short_url" placeholder="自訂代號 (可空)" class="input input-bordered w-full mb-2" />
     <input x-model="password" placeholder="密碼 (選填)" type="password" class="input input-bordered w-full mb-2" />
-    <textarea x-model="notes" placeholder="備註 (選填)" class="textarea textarea-bordered w-full mb-2"></textarea>
+    <div style="margin-bottom: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px">
+        <label for="notes">備註說明</label>
+        <!-- 按鈕觸發 fetchPageInfo 方法 -->
+        <button type="button" @click.prevent="fetchPageInfo" :disabled="isFetchingInfo" style="padding: 2px 8px; font-size: 0.8em">
+          <span x-text="isFetchingInfo ? '抓取中...' : '取得頁面資訊'"></span>
+        </button>
+      </div>
+      <!-- textarea 使用 x-model 雙向綁定 notes 狀態 -->
+      <textarea id="notes" x-model="notes" rows="4" style="width: 100%"></textarea>
+    </div>
     <label class="flex items-center mb-2">
       <input x-model="is_active" type="checkbox" class="checkbox mr-2" />
       啟用
