@@ -1,6 +1,10 @@
-{% extends 'layouts/default.html' %} {% block main %}
+{% extends 'layouts/default.html' %} {% block breadcrumbs %}
+<li><a href="{% url 'links:index' %}">短網址</a></li>
 
-<div x-data="shortenerForm()" @submit.prevent="submit" class="max-w-md mx-auto p-4">
+<li>新增短網址</li>
+{% endblock %} {% block main %}
+
+<div x-data="shortenerForm" @submit.prevent="submit" class="max-w-md mx-auto p-4">
   <form>
     <div>
       <label for="original_url">連結</label>
