@@ -1,16 +1,12 @@
 {% extends 'layouts/default.html' %} {% block breadcrumbs %}
-
-<li>短網址</li>
+<li><a href="{% url 'pages:index' %}">HOME</a></li>
+<li><a href="{% url 'links:index' %}">短網址</a></li>
 {% endblock %} {% block main %}
 <div class="container mx-auto p-4">
   <div class="flex justify-between items-center mb-4">
     <h1 class="text-2xl font-bold">我的短網址</h1>
-    <a href="{% url 'links:new' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"> 建立新網址 </a>
+    <a href="{% url 'links:new' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"> 建立短網址 </a>
   </div>
-
-  {% if messages %} {% for message in messages %}
-  <div class="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">{{ message }}</div>
-  {% endfor %} {% endif %}
 
   <div class="bg-white shadow-md rounded my-6">
     <table class="min-w-full table-auto">
@@ -18,6 +14,7 @@
         <tr>
           <th class="px-6 py-3 text-left">短網址</th>
           <th class="px-6 py-3 text-left">原始網址</th>
+          <th class="px-6 py-3 text-center">密碼保護</th>
           <th class="px-6 py-3 text-center">狀態</th>
           <th class="px-6 py-3 text-center">點擊次數</th>
           <th class="px-6 py-3 text-right">操作</th>
@@ -28,14 +25,17 @@
         <tr class="border-b">
           <td class="px-6 py-4">{{ request.get_host }}/{{ link.slug }}</td>
           <td class="px-6 py-4 truncate max-w-xs"><a href="{{ link.original_url }}" target="_blank">{{ link.original_url }}</a></td>
+          <td class="px-6 py-4 text-center">{% if link.password %}是{% else %}否{% endif %}</td>
           <td class="px-6 py-4 text-center">{% if link.is_active %}啟用{% else %}停用{% endif %}</td>
           <td class="px-6 py-4 text-center">{{ link.click_count }}</td>
-          <td class="px-6 py-4 text-right">
-            <a href="{% url 'links:update' id=link.id %}" class="text-indigo-600 hover:text-indigo-900 mr-4">編輯</a>
-            <form action="{% url 'links:delete' id=link.id %}" method="post" onsubmit="return confirm('確定要刪除？')">
-              {% csrf_token %}
-              <button class="text-red-600 hover:text-red-900 cursor-pointer">刪除</button>
-            </form>
+          <td class="px-6 py-4">
+            <div class="flex justify-end items-center space-x-2">
+              <a href="{% url 'links:update' id=link.id %}" class="btn btn-sm btn-ghost text-indigo-600 text-lg"> 編輯 </a>
+              <form action="{% url 'links:delete' id=link.id %}" method="post" onsubmit="return confirm('確定要刪除這個短網址嗎？這個操作無法復原。')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-ghost text-red-600 text-lg">刪除</button>
+              </form>
+            </div>
           </td>
         </tr>
         {% empty %}

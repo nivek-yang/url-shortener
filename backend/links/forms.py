@@ -19,7 +19,7 @@ class LinkForm(forms.ModelForm):
         }
         widgets = {
             'password': forms.PasswordInput(
-                render_value=True
+                render_value=False
             ),  # 讓密碼欄位在編輯時能顯示 (但不安全，建議留空讓使用者重設)
             'notes': forms.Textarea(attrs={'rows': 3}),
         }

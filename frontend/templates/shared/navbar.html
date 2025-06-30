@@ -1,14 +1,14 @@
-{% load socialaccount %}
+{% load socialaccount %} {% load static %}
 
 <nav class="bg-white shadow-md">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
-      <!-- 1. 左側 Logo 或網站標題 -->
+    <div class="flex justify-between items-center h-25">
+      <!-- 左側 Logo 或網站標題 -->
       <div class="flex-shrink-0">
-        <a href="/" class="text-2xl font-bold text-indigo-600">shr.today</a>
+        <a href="/" class="text-2xl font-bold text-indigo-600"><img class="h-40 w-auto" src="{% static 'assets/images/shr_logo.png' %}" alt="shr.today" /></a>
       </div>
 
-      <!-- 2. 右側使用者狀態區 -->
+      <!-- 右側使用者狀態區 -->
       <div class="flex items-center">
         {% if user.is_authenticated %}
 

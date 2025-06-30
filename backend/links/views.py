@@ -32,6 +32,8 @@ def link_shortener_api(request):
     original_url = data.get('original_url')
     custom_slug = data.get('slug')
     password = data.get('password')
+    is_active = data.get('is_active', True)
+    notes = data.get('notes', '')
 
     if not original_url:
         return JsonResponse(
@@ -42,6 +44,8 @@ def link_shortener_api(request):
         original_url=original_url,
         slug=custom_slug,
         password=password,  # 密碼會在 model.save() 中被 hash
+        is_active=is_active,
+        notes=notes,
     )
 
     if request.user.is_authenticated:
