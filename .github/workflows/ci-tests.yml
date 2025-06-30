@@ -54,6 +54,8 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> backend/.env
           echo "POSTGRES_HOST=db" >> backend/.env
           echo "POSTGRES_PORT=5432" >> backend/.env
+          echo "SOCIAL_AUTH_GOOGLE_CLIENT_ID"="${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_ID }}" >> backend/.env
+          echo "SOCIAL_AUTH_GOOGLE_CLIENT_SECRET"="${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_SECRET }}" >> backend/.env
 
       - name: Build docker-compose services
         run: docker compose -f docker-compose.dev.yml build
