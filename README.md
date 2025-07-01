@@ -5,7 +5,7 @@
 
 # 專案介紹
 
-本專案是一個短網址服務 [https:shr.today](https:shr.today)，使用 Django 開發，支援 Google OAuth 登入、密碼保護短網址、自動抓取網頁資訊、短網址管理等服務。
+本專案是一個短網址服務 [https://shr.today](https://shr.today)，使用 Django 開發，支援 Google OAuth 登入、密碼保護短網址、自動抓取網頁資訊、短網址管理等服務。
 
 ---
 
