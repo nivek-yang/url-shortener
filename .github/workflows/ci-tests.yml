@@ -15,6 +15,8 @@ jobs:
       DEBUG: "True"
       USE_POSTGRES: "False"
       ALLOWED_HOSTS: localhost,127.0.0.1
+      SOCIAL_AUTH_GOOGLE_CLIENT_ID: ${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_ID }}
+      SOCIAL_AUTH_GOOGLE_CLIENT_SECRET: ${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
