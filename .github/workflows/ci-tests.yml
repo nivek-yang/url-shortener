@@ -10,6 +10,17 @@ jobs:
       run:
         working-directory: backend
 
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DEBUG: "True"
@@ -17,6 +28,9 @@ jobs:
       ALLOWED_HOSTS: localhost,127.0.0.1
       SOCIAL_AUTH_GOOGLE_CLIENT_ID: ${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_ID }}
       SOCIAL_AUTH_GOOGLE_CLIENT_SECRET: ${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_SECRET }}
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_DB: 0
 
     steps:
       - uses: actions/checkout@v4
@@ -56,6 +70,9 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> backend/.env
           echo "POSTGRES_HOST=db" >> backend/.env
           echo "POSTGRES_PORT=5432" >> backend/.env
+          echo "REDIS_HOST=redis" >> backend/.env
+          echo "REDIS_PORT=6379" >> backend/.env
+          echo "REDIS_DB=0" >> backend/.env
           echo "SOCIAL_AUTH_GOOGLE_CLIENT_ID"="${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_ID }}" >> backend/.env
           echo "SOCIAL_AUTH_GOOGLE_CLIENT_SECRET"="${{ secrets.SOCIAL_AUTH_GOOGLE_CLIENT_SECRET }}" >> backend/.env
 

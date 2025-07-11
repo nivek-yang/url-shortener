@@ -18,6 +18,7 @@ services:
       - REDIS_HOST=redis
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:15
@@ -38,6 +39,42 @@ services:
       - static_volume:/staticfiles
     depends_on:
       - backend
+    restart: on-failure
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./backend/.env
+    environment:
+      - DEBUG=False
+      - USE_POSTGRES=True
+      - REDIS_HOST=redis
+    restart: on-failure
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A config beat -l info -s /tmp/celerybeat-schedule
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./backend/.env
+    environment:
+      - DEBUG=False
+      - USE_POSTGRES=True
+      - REDIS_HOST=redis
     restart: on-failure
 
 volumes:
