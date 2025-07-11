@@ -25,11 +25,7 @@ def test_sync_click_counts_task(link_factory):
 
     # 2. Execute the task
     # In Eager mode, this runs the function synchronously
-    result = sync_click_counts.delay()
-
-    # Optional: Check if the task reports success
-    assert 'Successfully synced' in result.get()
-    assert '2' in result.get()  # Asserts that 2 links were synced
+    sync_click_counts.delay()
 
     # 3. Verify database state
     # Refresh the objects from the database to get the updated values

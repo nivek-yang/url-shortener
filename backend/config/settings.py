@@ -166,12 +166,9 @@ ACCOUNT_LOGOUT_ON_GET = True
 CELERY_BROKER_URL = CELERY_BROKER_URL = (
     f'redis://{env.str("REDIS_HOST", "localhost")}:{env.int("REDIS_PORT", 6379)}/2'
 )
-CELERY_RESULT_BACKEND = (
-    f'redis://{env.str("REDIS_HOST", "localhost")}:{env.int("REDIS_PORT", 6379)}/3'
-)
+CELERY_TASK_IGNORE_RESULT = True
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
 # Celery Beat Settings
