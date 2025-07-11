@@ -1,5 +1,8 @@
+import hashlib
+
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
@@ -17,6 +20,7 @@ class Link(models.Model):
     original_url = models.URLField(
         max_length=2048, error_messages={'invalid': URL_INVALID_ERROR}
     )
+    original_url_hash = models.CharField(max_length=64, unique=True, db_index=True)
     slug = models.SlugField(
         max_length=50,
         unique=True,
@@ -45,6 +49,12 @@ class Link(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True)
     click_count = models.PositiveIntegerField(default=0)
     notes = models.TextField(blank=True, null=True)
+
+    def get_click_count(self):
+        from .views import counter_redis  # Avoid circular import
+
+        count = counter_redis.get(f'click_count:{self.slug}')
+        return int(count) if count else 0
 
     def clean_slug(self, slug_value):
         slugified_slug = slugify(slug_value)
@@ -78,8 +88,15 @@ class Link(models.Model):
         if self.password:
             self.password = self.clean_password(self.password)
 
+        if not self.original_url_hash:
+            self.original_url_hash = hashlib.sha256(
+                self.original_url.encode()
+            ).hexdigest()
+
         self.full_clean()
         super().save(*args, **kwargs)
+        # Invalidate cache
+        cache.delete(f'link:{self.slug}')
 
     def __str__(self):
         return f'slug: {self.slug} -> original url: {self.original_url}'
