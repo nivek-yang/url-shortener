@@ -20,7 +20,9 @@ class Link(models.Model):
     original_url = models.URLField(
         max_length=2048, error_messages={'invalid': URL_INVALID_ERROR}
     )
-    original_url_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    original_url_hash = models.CharField(
+        max_length=64, unique=True, db_index=True, blank=True, null=True
+    )
     slug = models.SlugField(
         max_length=50,
         unique=True,
@@ -76,24 +78,39 @@ class Link(models.Model):
             return make_password(password_value)
         return password_value
 
+    def clean(self):
+        # 驗證 slug
+        if self.slug:
+            slugified_slug = slugify(self.slug)
+            if len(slugified_slug) > 50:
+                raise ValidationError({'slug': SLUG_MAX_LENGTH_ERROR})
+            if Link.objects.exclude(pk=self.pk).filter(slug=slugified_slug).exists():
+                raise ValidationError({'slug': SLUG_DUPLICATE_ERROR})
+        # 驗證密碼
+        if (
+            self.password
+            and not self.password.startswith('pbkdf2_')
+            and len(self.password) > 64
+        ):
+            raise ValidationError({'password': PASSWORD_MAX_LENGTH_ERROR})
+
     def save(self, *args, **kwargs):
         if self.slug:
-            self.slug = self.clean_slug(self.slug)
+            self.slug = slugify(self.slug)
 
         else:
             self.slug = generate_unique_slug()
             while Link.objects.exclude(pk=self.pk).filter(slug=self.slug).exists():
                 self.slug = generate_unique_slug()
 
-        if self.password:
-            self.password = self.clean_password(self.password)
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
 
         if not self.original_url_hash:
             self.original_url_hash = hashlib.sha256(
                 self.original_url.encode()
             ).hexdigest()
 
-        self.full_clean()
         super().save(*args, **kwargs)
         # Invalidate cache
         cache.delete(f'link:{self.slug}')

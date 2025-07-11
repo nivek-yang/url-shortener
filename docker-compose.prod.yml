@@ -15,6 +15,7 @@ services:
     environment:
       - DEBUG=False
       - USE_POSTGRES=True
+      - REDIS_HOST=redis
     depends_on:
       - db
 

@@ -18,3 +18,9 @@ dbshell:
 
 pytest:
 	uv run pytest -v --tb=short --maxfail=5 --disable-warnings
+
+docker-dev:
+	docker compose -f ../docker-compose.dev.yml up --build -d
+
+docker-prod:
+	docker compose -f ../docker-compose.prod.yml up --build -d

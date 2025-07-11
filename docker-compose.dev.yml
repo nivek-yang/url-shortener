@@ -20,6 +20,7 @@ services:
     environment:
       - DEBUG=True
       - USE_POSTGRES=True
+      - REDIS_HOST=redis
 
     depends_on:
       - db
