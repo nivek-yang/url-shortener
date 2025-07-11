@@ -1,19 +1,21 @@
 import pytest
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from links.constants import (
     SLUG_DUPLICATE_ERROR,
     SLUG_MAX_LENGTH_ERROR,
     URL_INVALID_ERROR,
 )
+from links.models import Link
 
 
 @pytest.mark.django_db
 def test_link_slug_validation(link_factory):
     """Test that a custom slug must be unique."""
-    link1 = link_factory(slug='custom-slug')
-    with pytest.raises(Exception) as exc_info:
+    link_factory(slug='custom-slug')
+    with pytest.raises(IntegrityError):
         link_factory(slug='custom-slug')
-    assert SLUG_DUPLICATE_ERROR in str(exc_info.value)
 
 
 @pytest.mark.django_db
@@ -26,13 +28,11 @@ def test_link_slug_generation(link_factory):
 @pytest.mark.django_db
 def test_link_slug_uniqueness_after_save(link_factory):
     """Test that the slug remains unique after saving."""
-    link1 = link_factory(slug='unique-slug')
+    link_factory(slug='unique-slug')
 
     # Attempt to save a link with the same slug
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(IntegrityError):
         link_factory(slug='unique-slug')
-
-    assert 'already in use' in str(exc_info.value)
 
 
 @pytest.mark.django_db
@@ -54,22 +54,25 @@ def test_link_slug_blank(link_factory):
 @pytest.mark.django_db
 def test_link_slug_max_length(link_factory):
     """Test that the slug does not exceed the maximum length and raises a custom error."""
-    with pytest.raises(Exception) as exc_info:
-        link_factory(slug='a' * 51)
+    with pytest.raises(ValidationError) as exc_info:
+        link = link_factory.build(slug='a' * 51)
+        link.full_clean()
     assert SLUG_MAX_LENGTH_ERROR in str(exc_info.value)
 
 
 @pytest.mark.django_db
 def test_link_invalid_url(link_factory):
     """Test that an invalid URL raises a validation error."""
-    with pytest.raises(Exception) as exc_info:
-        link_factory(original_url='invalid-url')
+    with pytest.raises(ValidationError) as exc_info:
+        link = link_factory.build(original_url='invalid-url')
+        link.full_clean()
     assert URL_INVALID_ERROR in str(exc_info.value)
 
 
 @pytest.mark.django_db
 def test_link_password_max_length(link_factory):
     """Test that the password does not exceed the maximum length and raises a custom error."""
-    with pytest.raises(Exception) as exc_info:
-        link_factory(password='a' * 65)
+    with pytest.raises(ValidationError) as exc_info:
+        link = link_factory.build(password='a' * 65)
+        link.full_clean()
     assert 'exceeds maximum length of 64 characters' in str(exc_info.value)

@@ -28,13 +28,13 @@ def test_redirect_link_no_password(client, link_factory):
 
 @pytest.mark.django_db
 def test_redirect_link_click_count(client, link_factory):
-    link = link_factory(password='', is_active=True, click_count=5)
+    link = link_factory(password='', is_active=True)
     url = reverse('links:redirect_link', kwargs={'slug': link.slug})
     response = client.get(url)
     assert response.status_code == 302
     assert response['Location'] == link.original_url
-    link.refresh_from_db()
-    assert link.click_count == 6
+    # Check the click count in Redis using the model method
+    assert link.get_click_count() == 1
 
 
 @pytest.mark.django_db
