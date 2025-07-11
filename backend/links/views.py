@@ -1,10 +1,10 @@
 import hashlib
 import json
+import os
 
 import redis
 import requests
 from bs4 import BeautifulSoup
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
@@ -28,10 +28,12 @@ from .models import Link
 link_cache = caches['default']
 
 # Create a separate Redis client for counters
-counter_redis = redis.Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=1)
+counter_redis = redis.Redis(
+    host=os.environ.get('REDIS_HOST', 'localhost'), port=6379, db=1
+)
 
 
-@csrf_exempt  # 允許 CSRF 保護被跳過，僅在 API 中使用
+@csrf_exempt
 @require_http_methods(['POST'])
 def link_shortener_api(request):
     try:
@@ -45,30 +47,16 @@ def link_shortener_api(request):
             {'success': False, 'message': ORIGINAL_URL_REQUIRED_ERROR}, status=400
         )
 
-    # Reverse cache check
-    hash_val = hashlib.sha256(original_url.encode()).hexdigest()
-    cached_slug = link_cache.get(f'rev:{hash_val}')
-    if cached_slug:
-        short_url = request.build_absolute_uri(f'/{cached_slug}')
-        return JsonResponse(
-            {
-                'success': True,
-                'message': 'Link already exists.',
-                'short_url': short_url,
-                'original_url': original_url,
-            },
-            status=200,
-        )
-
     custom_slug = data.get('slug')
     password = data.get('password')
     is_active = data.get('is_active', True)
     notes = data.get('notes', '')
 
+    # 1. 先驗證 slug/password 等欄位
     link_instance = Link(
         original_url=original_url,
         slug=custom_slug,
-        password=password,  # 密碼會在 model.save() 中被 hash
+        password=password,
         is_active=is_active,
         notes=notes,
     )
@@ -77,21 +65,8 @@ def link_shortener_api(request):
         link_instance.owner = request.user
 
     try:
-        link_instance.save()
-        # Cache the new link and reverse link
-        link_cache.set(
-            f'link:{link_instance.slug}',
-            {
-                'original_url': link_instance.original_url,
-                'is_active': link_instance.is_active,
-                'password': link_instance.password,
-            },
-            timeout=60 * 60 * 24 * 7,  # Cache for 7 days
-        )
-        link_cache.set(f'rev:{hash_val}', link_instance.slug, timeout=60 * 60 * 24 * 7)
-
+        link_instance.full_clean()  # 只做驗證，不存 DB
     except ValidationError as e:
-        # 取第一個錯誤訊息
         msg = ''
         if hasattr(e, 'message_dict'):
             for v in e.message_dict.values():
@@ -104,15 +79,42 @@ def link_shortener_api(request):
             msg = str(e)
         return JsonResponse({'success': False, 'message': msg}, status=400)
 
-    short_url = request.build_absolute_uri(f'/{link_instance.slug}')
+    # 2. 檢查 cache
+    hash_val = hashlib.sha256(original_url.encode()).hexdigest()
+    cached_slug = link_cache.get(f'rev:{hash_val}')
+    if cached_slug:
+        short_url = request.build_absolute_uri(f'/{cached_slug}')
+        return JsonResponse(
+            {
+                'success': True,
+                'message': CREATED_LINK_SUCCESS,
+                'short_url': short_url,
+                'original_url': original_url,
+            },
+            status=201,
+        )
 
+    # 3. 寫入 DB
+    link_instance.save()
+    # 4. Cache the new link and reverse link
+    link_cache.set(
+        f'link:{link_instance.slug}',
+        {
+            'original_url': link_instance.original_url,
+            'is_active': link_instance.is_active,
+            'password': link_instance.password,
+        },
+        timeout=60 * 60 * 24 * 7,
+    )
+    link_cache.set(f'rev:{hash_val}', link_instance.slug, timeout=60 * 60 * 24 * 7)
+
+    short_url = request.build_absolute_uri(f'/{link_instance.slug}')
     response_data = {
         'success': True,
         'message': CREATED_LINK_SUCCESS,
         'short_url': short_url,
         'original_url': link_instance.original_url,
     }
-
     return JsonResponse(response_data, status=201)
 
 
