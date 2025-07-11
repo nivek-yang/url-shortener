@@ -1,14 +1,11 @@
 import hashlib
 import json
-import os
 
-import redis
 import requests
 from bs4 import BeautifulSoup
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
-from django.core.cache import caches
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -23,14 +20,7 @@ from links.constants import (
 
 from .forms import LinkForm
 from .models import Link
-
-# Get the default cache (for links)
-link_cache = caches['default']
-
-# Create a separate Redis client for counters
-counter_redis = redis.Redis(
-    host=os.environ.get('REDIS_HOST', 'localhost'), port=6379, db=1
-)
+from .redis_client import counter_redis, link_cache
 
 
 @csrf_exempt

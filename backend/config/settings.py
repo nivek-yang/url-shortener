@@ -158,3 +158,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
+
+
+# settings.py
+
+# Celery Configuration
+CELERY_BROKER_URL = CELERY_BROKER_URL = (
+    f'redis://{env.str("REDIS_HOST", "localhost")}:{env.int("REDIS_PORT", 6379)}/2'
+)
+CELERY_RESULT_BACKEND = (
+    f'redis://{env.str("REDIS_HOST", "localhost")}:{env.int("REDIS_PORT", 6379)}/3'
+)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat Settings
+# This schedule defines the periodic tasks that Celery should run.
+CELERY_BEAT_SCHEDULE = {
+    'sync-clicks-every-5-minutes': {
+        'task': 'links.tasks.sync_click_counts',
+        'schedule': 300.0,  # 每 300 秒 (5分鐘)
+    },
+}
