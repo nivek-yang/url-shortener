@@ -23,6 +23,34 @@ services:
       - db
       - redis
 
+  fastapi-links-service:
+    build:
+      context: ./fastapi-links-service
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: uvicorn main:app --host 0.0.0.0 --port 8001
+    volumes:
+      - ./fastapi-links-service:/app/fastapi-links-service
+      - ./fastapi-links-service/.venv:/app/fastapi-links-service/.venv
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./backend/.env # 暫時共用 Django 的 .env
+    environment:
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_DB=links_db
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: on-failure
+
   redis:
     image: redis:7-alpine
     ports:
@@ -47,6 +75,7 @@ services:
       - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - backend
+      - fastapi-links-service # Nginx 也依賴 FastAPI
 
   worker:
     build:
@@ -84,3 +113,4 @@ services:
 
 volumes:
   pgdata:
+  mongodb_data:
