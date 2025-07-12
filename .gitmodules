@@ -1,0 +1,3 @@
+[submodule "fastapi-links-service"]
+	path = fastapi-links-service
+	url = git@github.com:nivek-yang/fastapi-links-service.git
